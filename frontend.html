@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Printer Interface</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    select, textarea { width: 100%; padding: 8px; }
+    button { background: #4CAF50; color: white; border: none; padding: 10px 15px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #status { margin-top: 15px; padding: 10px; border-radius: 4px; }
+    .success { background: #dff0d8; color: #3c763d; }
+    .error { background: #f2dede; color: #a94442; }
+  </style>
+</head>
+<body>
+  <h1>Print Document</h1>
+  
+  <div class="form-group">
+    <label for="printerSelect">Select Printer:</label>
+    <select id="printerSelect">
+      <option value="">-- Select a printer --</option>
+      <!-- Options will be loaded by JavaScript -->
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label for="textToPrint">Text to Print:</label>
+    <textarea id="textToPrint" rows="10">This is a test print job.</textarea>
+  </div>
+  
+  <button id="printButton">Print</button>
+  
+  <div id="status"></div>
+  
+  <script>
+    // Load printers when page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/printers');
+        const printers = await response.json();
+        
+        const printerSelect = document.getElementById('printerSelect');
+        printers.forEach(printer => {
+          const option = document.createElement('option');
+          option.value = printer.id;
+          option.textContent = `${printer.name} (${printer.ip}) - ${printer.status}`;
+          printerSelect.appendChild(option);
+        });
+      } catch (error) {
+        showStatus('Failed to load printers: ' + error.message, 'error');
+      }
+    });
+    
+    // Print button handler
+    document.getElementById('printButton').addEventListener('click', async () => {
+      const printerId = document.getElementById('printerSelect').value;
+      const text = document.getElementById('textToPrint').value;
+      console.log('printerid ', printerId);
+
+      if (!printerId) {
+        showStatus('Please select a printer', 'error');
+        return;
+      }
+      
+      if (!text.trim()) {
+        showStatus('Please enter text to print', 'error');
+        return;
+      }
+      
+      try {
+        showStatus('Sending print job...');
+        
+        const response = await fetch('http://localhost:3000/api/print', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            printerId: Number(printerId),
+            text: text
+          }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showStatus(`Print job sent to ${data.printer.name}`, 'success');
+        } else {
+          showStatus(`Printing failed: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        showStatus('Failed to connect to print server: ' + error.message, 'error');
+      }
+    });
+    
+    // Helper function to show status messages
+    function showStatus(message, type = '') {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = message;
+      statusDiv.className = type;
+    }
+  </script>
+</body>
+</html>

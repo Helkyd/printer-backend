@@ -72,11 +72,11 @@ const printerList = [
   {
     id: 1,
     name: 'PRT-BAR01',
-    ip: '192.168.8.100',
+    ip: '192.168.8.23',
     port: 9100,
     description: 'PRT-BAR01 - Thermal Receipt Printer',
     status: 'online',
-    type: 'laser'
+    type: 'thermal'
   },
   {
     id: 2,
@@ -90,11 +90,11 @@ const printerList = [
   {
     id: 3,
     name: 'PRT-KIT01',
-    ip: '192.168.8.102',
+    ip: '192.168.8.23',
     port: 9100,
     description: 'PRT-KIT01 - Thermal Receipt Printer',
-    status: 'offline',
-    type: 'label'
+    status: 'online',
+    type: 'thermal'
   }
 ];
 
